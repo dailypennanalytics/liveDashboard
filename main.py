@@ -356,92 +356,9 @@ def getRange(viewId, daySpan, spans):
     dpRangeT.columns = ['uniquePageViews', 'pageViews', 'bounceRate', 'avgTimeOnPage']
     return dpRangeT
 
-
-def getRangeOneYearAgo(viewId, daySpan, spans):
-    # daySpan: Number of days to aggregate over (eg, 7 for week)
-    # of spans to calculate statistics for (eg, 4 for a month)
-    current_year = DT.date.today().year
-    current_month = DT.date.today().month
-    current_day = DT.date.today().day
-    last_year = current_year - 1
-    a = DT.date(current_year, current_month, current_day)  # current date
-    b = DT.date(last_year, current_month, current_day)  # same date, but last year
-    delta = a - b
-    stats = {}
-    for i in range(spans):
-        start = b - DT.timedelta(days=daySpan * (i + 1))
-        end = b - DT.timedelta(days=daySpan * (i))
-        stats[str(end)] = getOverallStats(viewId,
-                                          startDate=str(start),
-                                          endDate=str(end))
-    dpRange = pd.DataFrame(stats)
-    dpRangeT = dpRange.T
-    dpRangeT.columns = ['uniquePageViews', 'pageViews', 'bounceRate', 'avgTimeOnPage']
-    return dpRangeT
-
-
-def getRangeTwoYearsAgo(viewId, daySpan, spans):
-    # daySpan: Number of days to aggregate over (eg, 7 for week)
-    # of spans to calculate statistics for (eg, 4 for a month)
-    current_year = DT.date.today().year
-    current_month = DT.date.today().month
-    current_day = DT.date.today().day
-    one_week_ago = current_day - 7
-    a = DT.date(current_year, current_month, current_day)  # current day
-    b = DT.date(current_year, current_month, one_week_ago)  # same date, but two years ago
-    delta = a - b
-
-    stats = {}
-    for i in range(spans):
-        start = today - DT.timedelta(days=delta.days) - DT.timedelta(days=daySpan * (i + 1))
-        end = today - DT.timedelta(days=delta.days) - DT.timedelta(days=daySpan * (i))
-        stats[str(end)] = getOverallStats(viewId,
-                                          startDate=str(start),
-                                          endDate=str(end))
-    dpRange = pd.DataFrame(stats)
-    dpRangeT = dpRange.T
-    dpRangeT.columns = ['uniquePageViews', 'pageViews', 'bounceRate', 'avgTimeOnPage']
-    return dpRangeT
-
-
-# print(dp_articles)
-
 dp_past_week, headerPastWeek = get_duration_engagement('22050415', 'ga:sourceMedium', week_ago_str)
 dp_past_month, headerPastMonth = get_duration_engagement('22050415', 'ga:sourceMedium', month_ago_str)
 dp_all_time, headerAllTime = get_duration_engagement('22050415', 'ga:sourceMedium')
-
-dpOverallStats = getRange('22050415', 7, 16)
-dpOverallStats = dpOverallStats.rename_axis('date')
-dpOverallStats.index = pd.to_datetime(dpOverallStats.index)
-topDataWeekly, topDataMonthly = topTrafficSources(week_ago_str), topTrafficSources(month_ago_str)
-topTagsWeekly, topTagsMonthly = topTags(week_ago_str), topTags(month_ago_str)
-
-# print(dpOverallStats)
-# print("AAAAAAAAAAAAAAAAAAAAAAA")
-# print(type(dpOverallStats))
-# print(type(dp_past_week))
-# print(dp_past_week)
-# print(dp_past_week.head(10))
-# clean data
-graphData_Now = dpOverallStats.groupby(pd.Grouper(level='date', freq='W')).mean()
-graphData_Now = graphData_Now.round(decimals=2)
-
-dpOverallStats_OneYear = getRangeOneYearAgo('22050415', 7, 16)
-dpOverallStats_OneYear = dpOverallStats_OneYear.rename_axis('date')
-dpOverallStats_OneYear.index = pd.to_datetime(dpOverallStats_OneYear.index)
-graphData_OneYear = dpOverallStats_OneYear.groupby(pd.Grouper(level='date', freq='W')).mean()
-graphData_OneYear = graphData_OneYear.round(decimals=2)
-
-dpOverallStats_TwoYears = getRangeTwoYearsAgo('22050415', 7, 16)
-dpOverallStats_TwoYears = dpOverallStats_TwoYears.rename_axis('date')
-dpOverallStats_TwoYears.index = pd.to_datetime(dpOverallStats_TwoYears.index)
-graphData_TwoYears = dpOverallStats_TwoYears.groupby(pd.Grouper(level='date', freq='W')).mean()
-graphData_TwoYears = graphData_TwoYears.round(decimals=2)
-
-# print(graphData_Now,graphData_OneYear,graphData_TwoYears)
-
-# print(get_duration_engagement('22050415', 'ga:sourceMedium', week_ago_str))
-# print(type(get_duration_engagement('22050415', 'ga:sourceMedium', week_ago_str)))
 
 titlelist = list(dp_past_week.head(10)['title'])
 viewlistweek = list(dp_past_week.head(10)['pageViews'])
@@ -451,17 +368,17 @@ lst = [titlelist, viewlistweek]
 df2 = pd.DataFrame({'title': titlelist, 'views': viewlistweek})
 
 test, test2 = getPivot(urls, '22050415', week_ago_str, pivotTag='ga:dimension3')
-print("Test 1:")
+# print("Test 1:")
 test = test.head(500)
-print(test)
+# print(test)
 for col in test.columns:
     print(col)
-print("Test 2:")
+# print("Test 2:")
 print(test2)
 sportslist = []
 newslist = []
 opinionlist = []
-print(len(test2))
+# print(len(test2))
 for i in range(len(test2)):
     if "news" in test2[i]:
         newslist.append(i)
@@ -472,16 +389,20 @@ for i in range(len(test2)):
 print(len(newslist))
 print(len(opinionlist))
 print(len(sportslist))
+print(sportslist) #maybe need to change sports list so its not number but urls/names
+#change the names to titles and not the urls
+
 pageviewlist = test['pageViews']
 namelist = test['url']
 newsviewlist = []
 opinionviewlist = []
 sportsviewlist = []
+
 newsnamelist = []
 opinionnamelist = []
 sportsnamelist = []
 for i in range(len(newslist)):
-    newsviewlist.append(pageviewlist[i])
+    newsviewlist.append(pageviewlist[i])  #need to match the two urls?
     newsnamelist.append(namelist[i])
 for i in range(len(opinionlist)):
     opinionviewlist.append(pageviewlist[i])
@@ -502,76 +423,76 @@ print(dfnews)
 print(dfsports)
 print(dfopinion)
 
-fig = px.histogram(df2, x="title", y='views')
-fig.update_layout(autosize=False,
-    width=1500,
-    height=1000,
-
-    xaxis= go.layout.XAxis(linecolor = 'black',
-                          linewidth = 1,
-                          mirror = True),
-
-    yaxis= go.layout.YAxis(linecolor = 'black',
-                          linewidth = 1,
-                          mirror = True),
-
-    margin=go.layout.Margin(
-        l=50,
-        r=50,
-        b=100,
-        t=100,
-        pad = 4
-    ))
-fig.write_image(file='staff_plot.png', format='png')
-print("AAAA")
-fig.show()
-fig = px.histogram(dfnews, x="title", y='views')
-fig.update_layout(autosize=False,
-    width=1500,
-    height=1000,
-
-    xaxis= go.layout.XAxis(linecolor = 'black',
-                          linewidth = 1,
-                          mirror = True),
-
-    yaxis= go.layout.YAxis(linecolor = 'black',
-                          linewidth = 1,
-                          mirror = True),
-
-    margin=go.layout.Margin(
-        l=50,
-        r=50,
-        b=100,
-        t=100,
-        pad = 4
-    ))
-fig.write_image(file='staff_plot2.png', format='png')
-print("AAAA")
-fig.show()
-fig = px.histogram(dfopinion, x="title", y='views')
-fig.update_layout(autosize=False,
-    width=1500,
-    height=1000,
-
-    xaxis= go.layout.XAxis(linecolor = 'black',
-                          linewidth = 1,
-                          mirror = True),
-
-    yaxis= go.layout.YAxis(linecolor = 'black',
-                          linewidth = 1,
-                          mirror = True),
-
-    margin=go.layout.Margin(
-        l=50,
-        r=50,
-        b=100,
-        t=100,
-        pad = 4
-    ))
-fig.write_image(file='staff_plot3.png', format='png')
-print("AAAA")
-fig.show()
-fig = px.histogram(dfsports, x="title", y='views')
+# fig = px.histogram(df2, x="title", y='views')
+# fig.update_layout(autosize=False,
+#     width=1500,
+#     height=1000,
+#
+#     xaxis= go.layout.XAxis(linecolor = 'black',
+#                           linewidth = 1,
+#                           mirror = True),
+#
+#     yaxis= go.layout.YAxis(linecolor = 'black',
+#                           linewidth = 1,
+#                           mirror = True),
+#
+#     margin=go.layout.Margin(
+#         l=50,
+#         r=50,
+#         b=100,
+#         t=100,
+#         pad = 4
+#     ))
+# fig.write_image(file='staff_plot.png', format='png')
+# print("AAAA")
+# fig.show()
+# fig = px.histogram(dfnews, x="title", y='views')
+# fig.update_layout(autosize=False,
+#     width=1500,
+#     height=1000,
+#
+#     xaxis= go.layout.XAxis(linecolor = 'black',
+#                           linewidth = 1,
+#                           mirror = True),
+#
+#     yaxis= go.layout.YAxis(linecolor = 'black',
+#                           linewidth = 1,
+#                           mirror = True),
+#
+#     margin=go.layout.Margin(
+#         l=50,
+#         r=50,
+#         b=100,
+#         t=100,
+#         pad = 4
+#     ))
+# fig.write_image(file='staff_plot2.png', format='png')
+# print("AAAA")
+# fig.show()
+# fig = px.histogram(dfopinion, x="title", y='views')
+# fig.update_layout(autosize=False,
+#     width=1500,
+#     height=1000,
+#
+#     xaxis= go.layout.XAxis(linecolor = 'black',
+#                           linewidth = 1,
+#                           mirror = True),
+#
+#     yaxis= go.layout.YAxis(linecolor = 'black',
+#                           linewidth = 1,
+#                           mirror = True),
+#
+#     margin=go.layout.Margin(
+#         l=50,
+#         r=50,
+#         b=100,
+#         t=100,
+#         pad = 4
+#     ))
+# fig.write_image(file='staff_plot3.png', format='png')
+# print("AAAA")
+# fig.show()
+fig = px.histogram(dfsports, x='Name', y='Views')
 fig.update_layout(autosize=False,
     width=1500,
     height=1000,
