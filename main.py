@@ -7,9 +7,12 @@ from google.analytics.data_v1beta.types import (
     RunReportRequest,
     
 )
+#"C://Users//anmol//Downloads//analytics-api-1581487025251-ac904d31a17e.txt"
 import os
+import plotly.express as px
+import plotly.graph_objs as go
 import pandas as pd
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ".analytics-api-1581487025251-ac904d31a17e"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C://Users//anmol//Downloads//analytics-api-1581487025251-ac904d31a17e.txt"
 def run_sample(property_id):
     namelist = []
     viewlist = []
