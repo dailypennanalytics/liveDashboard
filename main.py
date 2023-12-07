@@ -12,6 +12,9 @@ import os
 import plotly.express as px
 import plotly.graph_objs as go
 import pandas as pd
+import datetime
+today = datetime.date.today()
+week_ago = today - datetime.timedelta(days=7)
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C://Users//anmol//Downloads//analytics-api-1581487025251-ac904d31a17e.txt"
 def run_sample(property_id):
     namelist = []
@@ -31,7 +34,7 @@ def run_report(property_id):
         property=f"properties/{property_id}",
         dimensions=[Dimension(name="fullPageUrl")],
         metrics=[Metric(name="screenPageViews")],
-        date_ranges=[DateRange(start_date="2023-08-01", end_date="2023-08-15")],
+        date_ranges=[DateRange(start_date=str(week_ago), end_date=str(today))],
     )
     response = client.run_report(request)
     namelist, viewlist = print_run_report_response(response)
@@ -84,7 +87,24 @@ dpv2 = dp.iloc[:10]
 for i in range(len(list(dp['Name']))):
     dp['Name'][i] = str(dp['Name'][i])[22:]
     dp['Views'][i] = int(dp['Views'][i])
-fig = px.histogram(dpv2, x='Name', y='Views')
+###########################################
+for i in range(len(dpv2['Name'])):
+    dpv2['Name'][i] = dpv2['Name'][i][dpv2['Name'][i].find("/")+1:]
+    dpv2['Name'][i] = dpv2['Name'][i][dpv2['Name'][i].find("/")+1:]
+    dpv2['Name'][i] = dpv2['Name'][i].replace("-", " ")
+droplist = []
+for i in range(len(df34['Name'])):
+    df34['Name'][i] = df34['Name'][i][df34['Name'][i].find("/")+1:]
+    df34['Name'][i] = df34['Name'][i][df34['Name'][i].find("/")+1:]
+    df34['Name'][i] = df34['Name'][i].replace("-", " ")
+    if df34['Name'][i] == "":
+        droplist.append(i)
+df34 = df34.drop(droplist)
+df34 = df34.reset_index()
+del df34['index']
+df34v2 = df34.iloc[:10]
+###########################################
+fig = px.histogram(dpv2, x='Name', y='Views', title = "The DP")
 fig.update_layout(autosize=False,
     width=1500,
     height=1000,
@@ -106,7 +126,7 @@ fig.update_layout(autosize=False,
     ))
 fig.write_image(file='dpstatsimage.png', format='png')
 fig.show()
-fig = px.histogram(df34v2, x='Name', y='Views')
+fig = px.histogram(df34v2, x='Name', y='Views', title = "34th Street")
 fig.update_layout(autosize=False,
     width=1500,
     height=1000,
